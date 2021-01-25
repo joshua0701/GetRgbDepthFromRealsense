@@ -1,7 +1,9 @@
 # coding=utf-8
-import pyrealsense2 as rs
-import numpy as np
+import os
+import shutil
 import cv2
+import numpy as np
+import pyrealsense2 as rs
 
 pipeline = rs.pipeline()
 config = rs.config()
@@ -25,11 +27,27 @@ clipping_distance = clipping_distance_in_meters / depth_scale
 # The "align_to" is the stream type to which we plan to align depth frames.
 align = rs.align(rs.stream.color)
 
-frame_id = 1
-path = '/home/joshua/info/datas/tests/'
 
+def init_dir(dirname):
+    '''
+    如果文件夹不存在就创建，如果文件存在就清空！
+    :param filepath:需要创建的文件夹路径
+    :return:
+    '''
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
+    else:
+        shutil.rmtree(dirname)
+        os.mkdir(dirname)
+
+root = 'E:\\data\\'
+dir = 'cv_office\\'
+frame_id = 1
 
 try:
+    init_dir(root + dir + "depth\\")
+    init_dir(root + dir + "rgb\\")
+
     while True:
         frames = pipeline.wait_for_frames()
         frames = align.process(frames)
@@ -40,8 +58,8 @@ try:
             continue
         depth_frame = np.asanyarray(depth_frame.get_data())
         # 将深度图转化为伪彩色图方便观看
-        # depth_frame = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame, alpha=0.03), cv2.COLORMAP_JET)
-        cv2.imshow('depth', depth_frame)
+        depth_frame_toRGB = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame, alpha=0.03), cv2.COLORMAP_JET)
+        cv2.imshow('depth', depth_frame_toRGB)
 
         color_frame = frames.get_color_frame()
         if not color_frame:
@@ -49,13 +67,8 @@ try:
         color_frame = np.asanyarray(color_frame.get_data())
         cv2.imshow('color', color_frame)
 
-        if count == 30:
-            pass
-            print("rgb: ", color_frame.shape)
-            print("depth: ", depth_frame.shape)
-            cv2.imwrite("1.depth.png", depth_frame)
-            #color_frame = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
-            cv2.imwrite("2.color.png", color_frame)
+        cv2.imwrite(root + dir + "depth\\" + str(frame_id) +  ".png", depth_frame)
+        cv2.imwrite(root + dir + "rgb\\" + str(frame_id) +  ".png", color_frame)
 
     # # left　frames
     #     left_frame = frames.get_infrared_frame(1)
@@ -75,7 +88,9 @@ try:
             # 如果按下ESC则关闭窗口（ESC的ascii码为27），同时跳出循环
             cv2.destroyAllWindows()
             break
+        print("process frameId: " + str(frame_id))
         frame_id += 1
 finally:
     # Stop streaming
     pipeline.stop()
+
