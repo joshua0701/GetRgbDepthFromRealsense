@@ -79,8 +79,3 @@ try:
 finally:
     # Stop streaming
     pipeline.stop()
-
-#深度图上色参考https://github.com/IntelRealSense/librealsense/blob/jupyter/notebooks/distance_to_object.ipynb
-#对齐参考：https://github.com/IntelRealSense/librealsense/blob/master/wrappers/python/examples/align-depth2color.py
-#左右图获取参考https://blog.csdn.net/Hanghang_/article/details/102489762
-#其他参考https://blog.csdn.net/Dontla/article/details/102701680
